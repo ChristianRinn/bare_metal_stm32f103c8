@@ -5,12 +5,15 @@
 NAME      = hello_world
 #DEBUG	  = 1
 
-SRCS      = $(wildcard src/STM32F401XE/*.c)
+# run "make install" with OOCD_IFACE=stlink-v2-1 to use ST-Link V2.1, e.g. from Nucleo boards
+OOCD_IFACE ?= stlink-v2
+
+SRCS      = $(wildcard src/STM32F103C8/*.c)
 SRCS  	 += $(wildcard src/*.c)
 
-INCDIRS   = src/STM32F401XE
+INCDIRS   = src/STM32F103C8
 
-LSCRIPT   = src/STM32F401XE/gcc_linker.ld
+LSCRIPT   = src/STM32F103C8/gcc_linker.ld
 
 DEFINES   = $(EXDEFINES)
 
@@ -19,11 +22,11 @@ BUILDDIR  = build/
 CFLAGS    = -ffunction-sections
 CFLAGS   += -mlittle-endian
 CFLAGS   += -mthumb
-CFLAGS   += -mcpu=cortex-m4
-CFLAGS   += -mfloat-abi=hard
-CFLAGS   += -mfpu=fpv4-sp-d16
+CFLAGS   += -mcpu=cortex-m3
+CFLAGS   += -mfloat-abi=soft
 CFLAGS   += -std=gnu11
 CFLAGS   += -ggdb
+CFLAGS   += -DSTM32F103xB
 
 ifdef DEBUG
     CFLAGS   += -Og
@@ -76,13 +79,13 @@ all: print_size
 clean:
 	$(RM) -r $(wildcard $(BUILDDIR)*)
 
-
 .PHONY: install
 install: $(BIN_NAME).hex
 	@echo;
 	@echo [OpenOCD] program $<:
 	openocd -d0 \
-	-f board/st_nucleo_f4.cfg \
+	-f interface/$(OOCD_IFACE).cfg \
+	-f target/stm32f1x.cfg \
  	-c "program $<" \
  	-c "reset run" \
  	-c "shutdown"

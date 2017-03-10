@@ -1,12 +1,12 @@
-#include <stm32f401xe.h>
+#include <stm32f1xx.h>
 
 
 /*
- * The green LED is connected to port A5,
- * -> see schematic of NUCLEO-F401RE board
+ * The red LED is connected to port PC13,
+ * -> see schematic or pinout of "blue pill" board
  */
-#define LED_GPIO        GPIOA
-#define LED_PIN         5
+#define LED_GPIO        GPIOC
+#define LED_PIN         13
 
 
 /**
@@ -16,7 +16,7 @@
  */
 static void delay(unsigned time) {
     for (unsigned i=0; i<time; i++)
-        for (volatile unsigned j=0; j<20000; j++);
+        for (volatile unsigned j=0; j<2000; j++);
 }
 
 
@@ -28,37 +28,39 @@ static void delay(unsigned time) {
 int main(void) {
 
     /*
-     * Turn on the GPIOA unit,
-     * -> see section 6.3.9 in the manual
+     * Turn on the GPIOC unit,
+     * -> see section 7.3.7 in the manual
      */
-    RCC->AHB1ENR  |= RCC_AHB1ENR_GPIOAEN;
+    RCC->APB2ENR  |= RCC_APB2ENR_IOPCEN;
 
 
     /*
-     * Set LED-Pin as output
-     * Note: For simplicity this assumes the pin was configured
-     * as input before, as it is when it comes out of reset.
-     * -> see section 8.4.1 in the manual
+     * Clear configuration and mode bits of LED-Pin
+     * configuration bits 0b00 -> GPIO push-pull
+     * Set LED-Pin mode bits to 0b01 -> output mode max. speed 2 MHz
+     * 
+     * -> see section 9.2.2 in the manual
      */
-    LED_GPIO->MODER |= (0b01 << (LED_PIN << 1));
+    LED_GPIO->CRH = (LED_GPIO->CRH & (~(GPIO_CRH_CNF13 | GPIO_CRH_MODE13))) | (1 << GPIO_CRH_MODE13_Pos);
 
 
     while(1) {
 
         /*
          * LED on
-         * -> see section 8.4.7 in the manual
+         * On the blue pill board this actually means to pull the pin down.
+         * Pin is set low through the BSRR 
+         * -> see section 9.2.5 in the manual
          */
-        LED_GPIO->BSRRL = (1 << LED_PIN);
+        LED_GPIO->BSRR = (GPIO_BSRR_BR0 << LED_PIN);
 
-        delay(200);
+        delay(2000);
 
         /*
          *  LED off
          */
-        LED_GPIO->BSRRH = (1 << LED_PIN);
+        LED_GPIO->BSRR = (GPIO_BSRR_BS0 << LED_PIN);
 
-        delay(200);
+        delay(1000);
     }
 }
-
