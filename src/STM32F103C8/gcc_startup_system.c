@@ -58,23 +58,24 @@ uint32_t SystemCoreClock;
  * application to override it and provide its own implementation.
  */
 WEAK void SystemInit(void) {
-    /* Enable Power Control clock */
-    //RCC->APB1ENR |= RCC_APB1LPENR_PWREN;
-    
-    /* Regulator voltage scaling output selection: Scale 2 */
-    //PWR->CR |= PWR_CR_VOS_1;
 
-    /* Wait until HSI ready */
+    /* Enable Power Control clock -> see section 7.3.8 in the manual */
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+    /* Wait for HSI to become ready */
     while ((RCC->CR & RCC_CR_HSIRDY) == 0);
-
-    /* Store calibration value */
-    //PWR->CR |= (uint32_t)(16 << 3);
 
     /* Disable main PLL */
     RCC->CR &= ~(RCC_CR_PLLON);
-    
-    /* Wait until PLL ready (disabled) */
+
+    /* Enable HSE */
+    RCC->CR |= RCC_CR_HSEON;
+
+    /* Wait until PLL unlocked (disabled) */
     while ((RCC->CR & RCC_CR_PLLRDY) != 0);
+
+    /* Wait for HSE to become ready */
+    while ((RCC->CR & RCC_CR_HSERDY) == 0);
 
     /*
      * Configure Main PLL
@@ -87,9 +88,10 @@ WEAK void SystemInit(void) {
      * PLL configuration is really straight forward. Setting the PLLMULL bits in the
      * RCC->CFGR to 0b0111 results in a multiplication factor of 9.
      * The divider for the USB clock is 1.5 by default, resulting in 48MHz fusb.
+     * Select the HSE as PLL source by setting the PLLSRC bit in the configuration register.
      * See chapter 8.3.2 in the manual for more information.
      */
-    RCC->CFGR = (0b0111 << RCC_CFGR_PLLMULL_Pos);
+    RCC->CFGR = (0b0111 << RCC_CFGR_PLLMULL_Pos) | RCC_CFGR_PLLSRC;
 
     /* PLL On */
     RCC->CR |= RCC_CR_PLLON;
@@ -110,6 +112,9 @@ WEAK void SystemInit(void) {
     RCC->CFGR |= RCC_CFGR_SW_PLL;
     /* Check clock source */
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
+
+    /* Turn off HSI */
+    RCC->CR &= ~(RCC_CR_HSION);
 
     /* Set HCLK (AHB) prescaler (DIV1) */
     RCC->CFGR &= ~(RCC_CFGR_HPRE);
