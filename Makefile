@@ -8,8 +8,11 @@ NAME      = hello_world
 # run "make install" with OOCD_IFACE=stlink-v2-1 to use ST-Link V2.1, e.g. from Nucleo boards
 OOCD_IFACE ?= stlink-v2
 
+# run e.g. make EXAMPLE=example02 install to compile and upload example02_*
+EXAMPLE ?= example01
+
 SRCS      = $(wildcard src/STM32F103C8/*.c)
-SRCS  	 += $(wildcard src/*.c)
+SRCS  	 += $(wildcard src/$(EXAMPLE)*/*.c)
 
 INCDIRS   = src/STM32F103C8
 
