@@ -2,9 +2,13 @@
 
 
 /*
- * The red LED is connected to port PC13,
- * -> see schematic or pinout of "blue pill" board
+ * The LED pin (PC13) of the "blue pill" boards has no timer functionality attached to it.
+ * For this example we will pick PA6 and PA7 as CH1 and CH2 of timer 3.
+ * The pin defines below are actually not used in the gpio_init() function.
+ * Adjust them if you want to but be aware that not every pin can be attached to every
+ * channel of every timer. You will find a table with possible configurations in the datasheet.
  */
+
 #define PWM_GPIO        GPIOA
 #define PWM_PIN1        6
 #define PWM_PIN2        7
@@ -46,18 +50,18 @@ void timer_init(void) {
      * a "basic timer" has no capture/compare capabilities. 
      */
 
-    /* enable the clock to timer 2 in the APB1 enable register */
+    /* enable the clock to timer 3 in the APB1 enable register */
     RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
     RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 
     /*
-     * Timer 2 runs from the APB1 clock which is SCLK/2, i.e. 36 MHz.
+     * Timer 3 runs from the APB1 clock which is SCLK/2, i.e. 36 MHz.
      * So if we divide the APB1 clock by 3600 our timer runs at a tick rate
      * of 10 kHz. So we write 3599 in the prescaler register of the timer.
      * Why 3599 and not 3600? Because a value of 0 in the prescaler does 
      * (fortunately) not divide by zero but by one.
      */ 
-    TIM3->PSC = 36000 -1; // clock = 36.000.000 Hz -> CK_PSK = 1000 Hz
+    TIM3->PSC = 36000 -1; // tick_rate = 36.000.000 Hz / (PSC+1) = 1000 Hz
 
     /* set the value to count up to / to count down from */
     TIM3->ARR = 2000 -1; 
@@ -141,7 +145,7 @@ void timer_init(void) {
 
     /* 
      * Enable the counter by setting the counter enable bit in the control register
-     * of timer 2.
+     * of timer 3.
      */
     TIM3->CR1 |= TIM_CR1_CEN;
 
