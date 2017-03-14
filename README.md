@@ -32,5 +32,7 @@ and are in the file gcc_startup_system.c.
 * watch the red LED blink while studying the reference manual
 * by default example01 in the src directory is built, run `make EXAMPLE=example02` to compile the second one, etc.
 
+Makefile, linker script and startup code were ported from the [Nucleo-F401 bare metal project from Bernd Kreuss](https://github.com/prof7bit/bare_metal_stm32f401xe) to work on STM32F103C8.
+
 happy hacking :-)
 
