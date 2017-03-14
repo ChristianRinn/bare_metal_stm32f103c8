@@ -30,6 +30,7 @@ and are in the file gcc_startup_system.c.
 * connect the ST-Link to your "blue pill" and to your PC
 * `$ make install` or `$ make OOCD_IFACE=stlink-v2-1 install`
 * watch the red LED blink while studying the reference manual
+* by default example01 in the src directory is built, run `make EXAMPLE=example02` to compile the second one, etc.
 
 happy hacking :-)
 

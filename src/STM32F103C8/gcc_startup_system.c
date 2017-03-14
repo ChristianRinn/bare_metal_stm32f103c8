@@ -1,7 +1,7 @@
 /**
  * @file
  * vector table, startup code and SystemInit
- * for STM32F401Xe
+ * for STM32F103C8/STM32F103CB
  *
  * (c) 2016 Bernd Kreuss <prof7bit@gmail.com>
  * This file is public domain, you may use it, modify 
