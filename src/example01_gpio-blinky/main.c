@@ -5,8 +5,6 @@
  * The red LED is connected to port PC13,
  * -> see schematic or pinout of "blue pill" board
  */
-#define LED_GPIO        GPIOC
-#define LED_PIN         13
 
 
 /**
@@ -21,7 +19,7 @@ static void delay(unsigned time) {
 
 
 /**
- * Hello world blinky program
+ * Hello world blinky program with busy wait
  *
  * @return never
  */
@@ -35,13 +33,16 @@ int main(void) {
 
 
     /*
-     * Clear configuration and mode bits of LED-Pin
+     * Clear configuration and mode bits of PC_13
      * configuration bits 0b00 -> GPIO push-pull
      * Set LED-Pin mode bits to 0b01 -> output mode max. speed 2 MHz
+     * The configuration register is split into two registers for the STM32F1.
+     * Configuration register low (CRL) is for pin 0 to 7 and the
+     * "Configuration Register High" (CRH) is for pin 8 to 15. 
      * 
      * -> see section 9.2.2 in the manual
      */
-    LED_GPIO->CRH = (LED_GPIO->CRH & (~(GPIO_CRH_CNF13 | GPIO_CRH_MODE13))) | (1 << GPIO_CRH_MODE13_Pos);
+    GPIOC->CRH = (GPIOC->CRH & (~(GPIO_CRH_CNF13 | GPIO_CRH_MODE13))) | (1 << GPIO_CRH_MODE13_Pos);
 
 
     while(1) {
@@ -49,17 +50,21 @@ int main(void) {
         /*
          * LED on
          * On the blue pill board this actually means to pull the pin down.
-         * Pin is set low through the BSRR 
+         * Pin is set low or high through the BSRR (Bit Set Reset Register) 
          * -> see section 9.2.5 in the manual
+         * You can use the Output Data Register (ODR) as well for setting
+         * output pins high or low. Using the BSRR provides atomic write
+         * capabilities so we do not have to read the content first if we only
+         * want to set (turn high) or reset (turn low) a certain pin.
          */
-        LED_GPIO->BSRR = (GPIO_BSRR_BR0 << LED_PIN);
+        GPIOC->BSRR = (GPIO_BSRR_BR0 << 13);
 
         delay(2000);
 
         /*
          *  LED off
          */
-        LED_GPIO->BSRR = (GPIO_BSRR_BS0 << LED_PIN);
+        GPIOC->BSRR = (GPIO_BSRR_BS0 << 13);
 
         delay(1000);
     }
