@@ -33,6 +33,7 @@ CFLAGS   += -DSTM32F103xB
 
 ifdef DEBUG
     CFLAGS   += -Og
+    CFLAGS	 += -g3
 else
     CFLAGS   += -Os -flto
 endif

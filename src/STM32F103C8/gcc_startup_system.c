@@ -148,6 +148,18 @@ WEAK void SystemCoreClockUpdate(void) {
     // empty
 }
 
+/**
+ * The default empty exception handler. Its address will be placed
+ * in the vector table for all exceptions for which the linker cannot
+ * find an implementation elsewhere in the code.
+ *
+ * This function is defined with a weak symbol to allow the
+ * application to override it and provide its own implementation.
+ */
+WEAK void Default_Handler(void) {
+    while(1);
+}
+
 
 /**
  * This is the entry point right after reset. The address of this
@@ -167,29 +179,13 @@ NAKED void Reset_Handler(void) {
     SystemInit();
 
     /**
-     * Call main() but call it indirectly to prevent
-     * function inlining. If we would just call main()
-     * the usual way it might sometimes work but the
-     * link time optimizer which can be quite aggressive
-     * sometimes might try to convert the entire main()
-     * into an inline function and this is absolutely
-     * not what we want here.
+     * Call main and never return. If we do return though, something went 
+     * wrong, so we fall back into the Default_Handler.
      */
-    int(* volatile __main__)(void) = main;
-    __main__();
-}
 
+    main();
 
-/**
- * The default empty exception handler. Its address will be placed
- * in the vector table for all exceptions for which the linker cannot
- * find an implementation elsewhere in the code.
- *
- * This function is defined with a weak symbol to allow the
- * application to override it and provide its own implementation.
- */
-WEAK void Default_Handler(void) {
-    while(1);
+    Default_Handler();
 }
 
 
